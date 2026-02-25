@@ -117,12 +117,3 @@ button:hover {
   margin-top: 0.75rem;
   font-weight: 600;
 }
-.board {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 0.7rem;
-  background: #bbada0;
-  border-radius: 10px;
-  padding: 0.7rem;
-  touch-action: none;
-}
