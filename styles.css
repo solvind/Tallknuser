@@ -30,6 +30,12 @@ body {
   gap: 0.6rem;
 }
 
+
+.brand h1 {
+  margin: 0;
+  font-size: 1.4rem;
+}
+
 .mode-tabs {
   display: grid;
   grid-template-columns: repeat(5, minmax(0, 1fr));
