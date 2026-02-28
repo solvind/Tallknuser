@@ -3,62 +3,72 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Tallknuser</title>
+    <title>Minispill: 2048 + Pi</title>
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
     <main class="app">
-      <header class="controls" aria-label="Spillkontroller">
-        <div class="brand">
-          <h1>Tallknuser</h1>
-        </div>
-        <div class="mode-tabs" role="tablist" aria-label="Velg spill">
-          <button class="mode-tab active" data-mode="pi" role="tab" aria-selected="true">π</button>
-          <button class="mode-tab" data-mode="prime" role="tab" aria-selected="false">Prime</button>
-          <button class="mode-tab" data-mode="fibonacci" role="tab" aria-selected="false">Fibonacci</button>
-          <button class="mode-tab" data-mode="pyramid" role="tab" aria-selected="false">Pyramid</button>
-          <button id="rules-toggle" class="rules-btn" type="button" aria-expanded="false" aria-controls="rules-panel">?</button>
-        </div>
-        <button id="restart" class="restart-btn" type="button">Start på nytt</button>
+      <header class="app-header">
+        <h1>Minispill</h1>
+        <p>Velg mellom 2048 og Pi.</p>
       </header>
 
-      <section id="rules-panel" class="rules-panel" hidden>
-        <h2 id="game-title">π</h2>
-        <p id="game-description"></p>
-        <p id="game-rules"></p>
-      </section>
+      <nav class="game-switcher" aria-label="Velg spill">
+        <button id="show-2048" class="switch active" type="button">2048</button>
+        <button id="show-pi" class="switch" type="button">Pi</button>
+      </nav>
 
-      <section class="display" aria-live="polite">
-        <div class="display-row">
-          <span>Hiscore</span>
-          <strong id="highscore">1</strong>
-        </div>
-        <div class="display-row">
-          <span>Poeng</span>
-          <strong id="score">1</strong>
-        </div>
-        <div class="display-row">
-          <span>Tid igjen</span>
-          <strong id="timer">3.0s</strong>
-        </div>
-
-        <div class="sequence-panel" aria-label="Sekvens med tre linjer">
-          <span class="sequence-label">Sekvens</span>
-          <div class="sequence-window" id="sequence-window">
-            <div class="sequence-line" id="sequence-line-1"></div>
-            <div class="sequence-line" id="sequence-line-2"></div>
-            <div class="sequence-line" id="sequence-line-3"></div>
+      <section id="game-2048" class="game-panel active" aria-label="2048 spill">
+        <header class="top-bar">
+          <div>
+            <h2>2048</h2>
+            <p>Bruk piltastene eller sveip for å spille.</p>
           </div>
-        </div>
+          <div class="score-panel">
+            <div class="score-box">
+              <span>Poeng</span>
+              <strong id="score-2048">0</strong>
+            </div>
+            <button id="restart-2048" type="button">Start på nytt</button>
+          </div>
+        </header>
+
+        <section class="board" id="board" aria-label="2048 spillebrett"></section>
+        <p id="status-2048" class="status" aria-live="polite"></p>
       </section>
 
-      <section class="entry" id="entry-wrapper" hidden>
-        <label for="entry-input">Skriv svar</label>
-        <input id="entry-input" type="text" inputmode="numeric" autocomplete="off" readonly />
-      </section>
+      <section id="game-pi" class="game-panel" aria-label="Pi spill">
+        <header>
+          <h2>Pi</h2>
+          <p>Trykk neste siffer i π før tiden går ut.</p>
+        </header>
 
-      <section class="keypad" id="keypad" aria-label="Talltastatur"></section>
-      <p id="status" class="status" aria-live="assertive"></p>
+        <section class="display" aria-live="polite">
+          <p class="label">Fasiten så langt</p>
+          <p id="sequence" class="sequence">3,</p>
+          <div class="stats">
+            <p>Poeng: <strong id="score-pi">0</strong></p>
+            <p>Tid igjen: <strong id="timer">3.0</strong>s</p>
+          </div>
+        </section>
+
+        <p id="status-pi" class="status">Spillet starter når du trykker et tall.</p>
+
+        <section class="keypad" aria-label="Talltastatur">
+          <button type="button" class="digit" data-digit="1">1</button>
+          <button type="button" class="digit" data-digit="2">2</button>
+          <button type="button" class="digit" data-digit="3">3</button>
+          <button type="button" class="digit" data-digit="4">4</button>
+          <button type="button" class="digit" data-digit="5">5</button>
+          <button type="button" class="digit" data-digit="6">6</button>
+          <button type="button" class="digit" data-digit="7">7</button>
+          <button type="button" class="digit" data-digit="8">8</button>
+          <button type="button" class="digit" data-digit="9">9</button>
+          <button type="button" id="restart-pi" class="restart">↺</button>
+          <button type="button" class="digit" data-digit="0">0</button>
+          <button type="button" class="spacer" disabled aria-hidden="true"></button>
+        </section>
+      </section>
     </main>
 
     <script src="script.js"></script>
