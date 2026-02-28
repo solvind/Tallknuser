@@ -60,14 +60,10 @@ function getEmptyCells() {
       if (board[row][col] === 0) empty.push([row, col]);
     }
   }
-  return empty;
 }
 
-function addRandomTile() {
-  const empty = getEmptyCells();
-  if (!empty.length) return;
-  const [row, col] = empty[Math.floor(Math.random() * empty.length)];
-  board[row][col] = Math.random() < 0.9 ? 2 : 4;
+function updateHighscore() {
+  highscoreEl.textContent = String(loadHighscore(activeMode));
 }
 
 function slideAndMerge(line) {
@@ -83,20 +79,19 @@ function slideAndMerge(line) {
     } else {
       result.push(compact[i]);
     }
-  }
 
-  while (result.length < size) result.push(0);
-  return result;
+    timerEl.textContent = `${(remaining / 1000).toFixed(1)}s`;
+  }, TIMER_TICK_MS);
+
+  timerEl.textContent = `${(turnLimit / 1000).toFixed(1)}s`;
 }
 
-function rotateClockwise(matrix) {
-  return matrix[0].map((_, i) => matrix.map((row) => row[i]).reverse());
-}
-
-function moveLeft() {
-  const before = JSON.stringify(board);
-  board = board.map(slideAndMerge);
-  return before !== JSON.stringify(board);
+function renderRows(rows) {
+  const visibleRows = rows.slice(-VISIBLE_LINES);
+  while (visibleRows.length < VISIBLE_LINES) visibleRows.unshift("");
+  visibleRows.forEach((line, index) => {
+    sequenceLineEls[index].textContent = line;
+  });
 }
 
 function move(direction) {
@@ -104,47 +99,61 @@ function move(direction) {
 
   let moved = false;
 
-  if (direction === "left") {
-    moved = moveLeft();
-  } else if (direction === "up") {
-    board = rotateClockwise(rotateClockwise(rotateClockwise(board)));
-    moved = moveLeft();
-    board = rotateClockwise(board);
-  } else if (direction === "right") {
-    board = rotateClockwise(rotateClockwise(board));
-    moved = moveLeft();
-    board = rotateClockwise(rotateClockwise(board));
-  } else if (direction === "down") {
-    board = rotateClockwise(board);
-    moved = moveLeft();
-    board = rotateClockwise(rotateClockwise(rotateClockwise(board)));
+function getFibonacciAt(index) {
+  while (numberSequences.fibonacci.length <= index) {
+    const values = numberSequences.fibonacci;
+    const next = values[values.length - 1] + values[values.length - 2];
+    values.push(next);
   }
+  return numberSequences.fibonacci[index];
+}
 
   if (moved) {
     addRandomTile();
     update2048UI();
     evaluateGameState();
   }
+  return numberSequences.pyramid[index];
 }
 
-function hasMoves() {
-  if (getEmptyCells().length > 0) return true;
+function getExpectedValue() {
+  if (activeMode === "prime") return String(getPrimeAt(numberGameIndex));
+  if (activeMode === "fibonacci") return String(getFibonacciAt(numberGameIndex));
+  if (activeMode === "pyramid") return String(getPyramidAt(numberGameIndex));
+  return PI_DIGITS[piIndex];
+}
 
-  for (let row = 0; row < size; row++) {
-    for (let col = 0; col < size; col++) {
-      const value = board[row][col];
-      if (
-        value === board[row + 1]?.[col] ||
-        value === board[row - 1]?.[col] ||
-        value === board[row]?.[col + 1] ||
-        value === board[row]?.[col - 1]
-      ) {
-        return true;
-      }
+function getTurnLimitMs() {
+  if (activeMode === "pi") return BASE_TURN_MS;
+  const expected = getExpectedValue();
+  return Math.max(3, expected.length) * 1000;
+}
+
+function setGameOver(message) {
+  isGameOver = true;
+  clearInterval(timerId);
+  timerEl.textContent = "0.0s";
+  statusEl.textContent = message;
+  keypadEl.classList.add("disabled");
+}
+
+function resetTurnTimer() {
+  clearInterval(timerId);
+  const turnLimit = getTurnLimitMs();
+  turnStart = Date.now();
+
+  timerId = setInterval(() => {
+    const remaining = turnLimit - (Date.now() - turnStart);
+
+    if (remaining <= 0) {
+      setGameOver("Tiden gikk ut! Game over.");
+      return;
     }
-  }
 
-  return false;
+    timerEl.textContent = `${(remaining / 1000).toFixed(1)}s`;
+  }, TIMER_TICK_MS);
+
+  timerEl.textContent = `${(turnLimit / 1000).toFixed(1)}s`;
 }
 
 function evaluateGameState() {
@@ -157,21 +166,22 @@ function evaluateGameState() {
     gameOver2048 = true;
     status2048El.textContent = "💀 Game over! Ingen trekk igjen.";
   }
+
+  renderRows(chunks);
 }
 
 function update2048UI() {
   boardEl.innerHTML = "";
 
-  for (let row = 0; row < size; row++) {
-    for (let col = 0; col < size; col++) {
-      const value = board[row][col];
-      const tile = document.createElement("div");
-      tile.className = "tile";
-      tile.dataset.value = String(value);
-      tile.textContent = value === 0 ? "" : String(value);
-      boardEl.appendChild(tile);
-    }
+function updateDisplay() {
+  scoreEl.textContent = String(score);
+  if (activeMode === "pi") {
+    renderPiSequence();
+  } else if (entryInputEl) {
+    renderNumberSequence();
+    entryInputEl.value = typedValue;
   }
+}
 
   score2048El.textContent = String(score2048);
 }
@@ -194,18 +204,24 @@ function handleTouchEnd(event) {
   const deltaX = touch.clientX - touchStartX;
   const deltaY = touch.clientY - touchStartY;
 
-  if (
-    Math.abs(deltaX) < minSwipeDistance &&
-    Math.abs(deltaY) < minSwipeDistance
-  ) {
+  if (activeMode === "pi") {
+    if (/^\d$/.test(value)) handlePiDigitInput(value);
     return;
   }
 
-  if (Math.abs(deltaX) > Math.abs(deltaY)) {
-    onDirectionInput(deltaX > 0 ? "right" : "left");
-  } else {
-    onDirectionInput(deltaY > 0 ? "down" : "up");
+  if (value === "Enter") {
+    submitNumberAnswer();
+    return;
   }
+
+  if (/^\d$/.test(value)) {
+    typedValue += value;
+    updateDisplay();
+  }
+
+  visibleChunks.forEach(({ chunk, startIndex }, index) => {
+    sequenceLineEls[index].textContent = formatChunk(chunk, startIndex);
+  });
 }
 
 function setPiTimerDisplay() {
@@ -292,12 +308,39 @@ document.addEventListener("keydown", (event) => {
   const direction = map[event.key];
   if (!direction || !game2048El.classList.contains("active")) return;
 
-  event.preventDefault();
-  onDirectionInput(direction);
-});
+  const meta = MODES[mode];
+  if (gameTitleEl) gameTitleEl.textContent = meta.title;
+  if (gameDescriptionEl) gameDescriptionEl.textContent = meta.description;
+  if (gameRulesEl) gameRulesEl.textContent = meta.rules;
 
-boardEl.addEventListener("touchstart", handleTouchStart, { passive: true });
-boardEl.addEventListener("touchend", handleTouchEnd, { passive: true });
+  init();
+}
+
+function init() {
+  clearInterval(timerId);
+  isGameOver = false;
+  score = 1;
+  piIndex = 1;
+  numberGameIndex = 0;
+  typedValue = "";
+  keypadEl.classList.remove("disabled");
+
+  if (activeMode === "pi") {
+    sequenceRows = [];
+    if (entryWrapperEl) entryWrapperEl.hidden = true;
+  } else {
+    const firstValue = getExpectedValue();
+    sequenceRows = [firstValue];
+    numberGameIndex = 1;
+    if (entryWrapperEl) entryWrapperEl.hidden = false;
+  }
+
+  statusEl.textContent = MODES[activeMode].startMessage;
+  updateHighscore();
+  buildKeypad();
+  updateDisplay();
+  resetTurnTimer();
+}
 
 restart2048Btn.addEventListener("click", init2048);
 restartPiBtn.addEventListener("click", initPi);
