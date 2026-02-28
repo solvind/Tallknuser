@@ -202,6 +202,8 @@ function updateDisplay() {
     renderNumberSequence();
     entryInputEl.value = typedValue;
   }
+
+  renderRows(chunks);
 }
 
 function registerCorrectAnswer() {
@@ -218,6 +220,7 @@ function handlePiDigitInput(digit) {
     setGameOver(`Feil siffer. Forventet ${expected}.`);
     return;
   }
+}
 
   piIndex += 1;
   registerCorrectAnswer();
@@ -265,6 +268,15 @@ function handleKeyPress(value) {
     typedValue += value;
     updateDisplay();
   }
+
+  if (/^\d$/.test(value)) {
+    typedValue += value;
+    updateDisplay();
+  }
+
+  visibleChunks.forEach(({ chunk, startIndex }, index) => {
+    sequenceLineEls[index].textContent = formatChunk(chunk, startIndex);
+  });
 }
 
 function buildKeypad() {
