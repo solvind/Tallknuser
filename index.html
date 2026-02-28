@@ -3,17 +3,15 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-codex/create-mobile-game-pi-yf22so
     <title>Tallknuser</title>
-
-    <title>Pi</title>
- main
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
     <main class="app">
-codex/create-mobile-game-pi-yf22so
       <header class="controls" aria-label="Spillkontroller">
+        <div class="brand">
+          <h1>Tallknuser</h1>
+        </div>
         <div class="mode-tabs" role="tablist" aria-label="Velg spill">
           <button class="mode-tab active" data-mode="pi" role="tab" aria-selected="true">π</button>
           <button class="mode-tab" data-mode="prime" role="tab" aria-selected="false">Prime</button>
@@ -37,25 +35,6 @@ codex/create-mobile-game-pi-yf22so
         </div>
         <div class="display-row">
           <span>Poeng</span>
-
-      <header class="top-bar">
-        <div>
-          <h1>π
-
-Prime
-
-Fibonacci
-
-Pyramid</h1>
-          <p>Trykk neste riktige siffer i π innen 3 sekunder.</p>
-        </div>
-        <button id="restart" type="button">Start på nytt</button>
-      </header>
-
-      <section class="display" aria-live="polite">
-        <div class="display-row">
-          <span>Riktige siffer</span>
- main
           <strong id="score">1</strong>
         </div>
         <div class="display-row">
@@ -63,16 +42,11 @@ Pyramid</h1>
           <strong id="timer">3.0s</strong>
         </div>
 
-codex/create-mobile-game-pi-yf22so
         <div class="sequence-panel" aria-label="Sekvens med tre linjer">
-
-        <div class="sequence-panel" aria-label="Pi-sekvens med tre linjer">
- main
           <span class="sequence-label">Sekvens</span>
           <div class="sequence-window" id="sequence-window">
             <div class="sequence-line" id="sequence-line-1"></div>
             <div class="sequence-line" id="sequence-line-2"></div>
-codex/create-mobile-game-pi-yf22so
             <div class="sequence-line" id="sequence-line-3"></div>
           </div>
         </div>
@@ -82,12 +56,6 @@ codex/create-mobile-game-pi-yf22so
         <label for="entry-input">Skriv svar</label>
         <input id="entry-input" type="text" inputmode="numeric" autocomplete="off" readonly />
       </section>
-
-            <div class="sequence-line" id="sequence-line-3">3,</div>
-          </div>
-        </div>
-      </section>
- main
 
       <section class="keypad" id="keypad" aria-label="Talltastatur"></section>
       <p id="status" class="status" aria-live="assertive"></p>
