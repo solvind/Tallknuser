@@ -3,11 +3,41 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+codex/create-mobile-game-pi-yf22so
+    <title>Tallknuser</title>
+
     <title>Pi</title>
+ main
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
     <main class="app">
+codex/create-mobile-game-pi-yf22so
+      <header class="controls" aria-label="Spillkontroller">
+        <div class="mode-tabs" role="tablist" aria-label="Velg spill">
+          <button class="mode-tab active" data-mode="pi" role="tab" aria-selected="true">π</button>
+          <button class="mode-tab" data-mode="prime" role="tab" aria-selected="false">Prime</button>
+          <button class="mode-tab" data-mode="fibonacci" role="tab" aria-selected="false">Fibonacci</button>
+          <button class="mode-tab" data-mode="pyramid" role="tab" aria-selected="false">Pyramid</button>
+          <button id="rules-toggle" class="rules-btn" type="button" aria-expanded="false" aria-controls="rules-panel">?</button>
+        </div>
+        <button id="restart" class="restart-btn" type="button">Start på nytt</button>
+      </header>
+
+      <section id="rules-panel" class="rules-panel" hidden>
+        <h2 id="game-title">π</h2>
+        <p id="game-description"></p>
+        <p id="game-rules"></p>
+      </section>
+
+      <section class="display" aria-live="polite">
+        <div class="display-row">
+          <span>Hiscore</span>
+          <strong id="highscore">1</strong>
+        </div>
+        <div class="display-row">
+          <span>Poeng</span>
+
       <header class="top-bar">
         <div>
           <h1>π
@@ -25,6 +55,7 @@ Pyramid</h1>
       <section class="display" aria-live="polite">
         <div class="display-row">
           <span>Riktige siffer</span>
+ main
           <strong id="score">1</strong>
         </div>
         <div class="display-row">
@@ -32,15 +63,31 @@ Pyramid</h1>
           <strong id="timer">3.0s</strong>
         </div>
 
+codex/create-mobile-game-pi-yf22so
+        <div class="sequence-panel" aria-label="Sekvens med tre linjer">
+
         <div class="sequence-panel" aria-label="Pi-sekvens med tre linjer">
+ main
           <span class="sequence-label">Sekvens</span>
           <div class="sequence-window" id="sequence-window">
             <div class="sequence-line" id="sequence-line-1"></div>
             <div class="sequence-line" id="sequence-line-2"></div>
+codex/create-mobile-game-pi-yf22so
+            <div class="sequence-line" id="sequence-line-3"></div>
+          </div>
+        </div>
+      </section>
+
+      <section class="entry" id="entry-wrapper" hidden>
+        <label for="entry-input">Skriv svar</label>
+        <input id="entry-input" type="text" inputmode="numeric" autocomplete="off" readonly />
+      </section>
+
             <div class="sequence-line" id="sequence-line-3">3,</div>
           </div>
         </div>
       </section>
+ main
 
       <section class="keypad" id="keypad" aria-label="Talltastatur"></section>
       <p id="status" class="status" aria-live="assertive"></p>

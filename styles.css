@@ -18,16 +18,155 @@ body {
 }
 
 .app {
+ codex/create-mobile-game-pi-yf22so
+  width: min(100%, 430px);
+
   width: min(100%, 420px);
+ main
   background: #2a2d3a;
   border-radius: 18px;
   padding: 1rem;
   box-shadow: 0 18px 45px rgba(0, 0, 0, 0.35);
+codex/create-mobile-game-pi-yf22so
 }
 
-.top-bar {
+.controls {
+  display: grid;
+  gap: 0.6rem;
+}
+
+.mode-tabs {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 0.45rem;
+}
+
+.mode-tab,
+.rules-btn,
+.restart-btn {
+  border: none;
+  border-radius: 999px;
+  padding: 0.55rem 0.6rem;
+  font-weight: 700;
+  cursor: pointer;
+  color: #ffffff;
+  background: #3a3f52;
+}
+
+.mode-tab.active {
+  background: #6a7cff;
+}
+
+.rules-btn {
+  width: 100%;
+  aspect-ratio: 1;
+  border-radius: 50%;
+  padding: 0;
+}
+
+.restart-btn {
+  border-radius: 10px;
+  background: #6a7cff;
+}
+
+.rules-panel {
+  margin-top: 0.8rem;
+  background: #11131a;
+  border-radius: 10px;
+  padding: 0.7rem;
+}
+
+.rules-panel h2 {
+  margin: 0;
+  font-size: 1.1rem;
+}
+
+.rules-panel p {
+  margin: 0.35rem 0 0;
+  color: #cdd0dc;
+
+main
+}
+
+.display {
+  background: #11131a;
+  border-radius: 12px;
+  padding: 0.8rem;
+  margin: 1rem 0;
+}
+
+.display-row {
   display: flex;
   justify-content: space-between;
+codex/create-mobile-game-pi-yf22so
+  align-items: baseline;
+  gap: 1rem;
+}
+
+.display-row + .display-row {
+  margin-top: 0.45rem;
+}
+
+.display-row span {
+  color: #9ea3ba;
+  font-size: 0.9rem;
+}
+
+.display-row strong {
+  font-size: 1.1rem;
+  letter-spacing: 0.04em;
+}
+
+.sequence-panel {
+  margin-top: 0.7rem;
+}
+
+.sequence-label {
+  display: block;
+  color: #9ea3ba;
+  font-size: 0.9rem;
+  margin-bottom: 0.35rem;
+}
+
+.sequence-window {
+  border-radius: 10px;
+  background: #0a0c11;
+  padding: 0.55rem 0.65rem;
+  min-height: 5.2rem;
+  display: grid;
+  align-content: center;
+  gap: 0.2rem;
+  overflow: hidden;
+}
+
+.sequence-line {
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+  font-size: 1.05rem;
+  letter-spacing: 0.06em;
+  min-height: 1.2rem;
+  color: #f4f5f9;
+}
+
+.entry {
+  margin-bottom: 0.7rem;
+}
+
+.entry label {
+  display: block;
+  margin-bottom: 0.35rem;
+  color: #9ea3ba;
+  font-size: 0.9rem;
+}
+
+.entry input {
+  width: 100%;
+  border-radius: 10px;
+  border: 1px solid #49506b;
+  background: #0a0c11;
+  color: #f4f5f9;
+  font-size: 1.1rem;
+  padding: 0.6rem;
+
   gap: 1rem;
   align-items: flex-start;
 }
@@ -108,6 +247,7 @@ button {
   letter-spacing: 0.06em;
   min-height: 1.2rem;
   color: #f4f5f9;
+main
 }
 
 .keypad {
@@ -117,6 +257,21 @@ button {
 }
 
 .key {
+codex/create-mobile-game-pi-yf22so
+  font-size: 1.4rem;
+  font-weight: 800;
+  padding: 1rem 0;
+  border: none;
+  background: #3a3f52;
+  color: #ffffff;
+  border-radius: 14px;
+}
+
+.enter-key {
+  font-size: 1rem;
+}
+
+=======
   font-size: 1.6rem;
   font-weight: 800;
   padding: 1rem 0;
@@ -131,7 +286,7 @@ button {
 .keypad .key:last-child {
   grid-column: 2;
 }
-
+ main
 .keypad.disabled {
   pointer-events: none;
   opacity: 0.55;
