@@ -104,32 +104,6 @@ function getPrimeAt(index) {
       }
       candidate += 1;
     }
-
-    timerEl.textContent = `${(remaining / 1000).toFixed(1)}s`;
-  }, TIMER_TICK_MS);
-
-  timerEl.textContent = `${(turnLimit / 1000).toFixed(1)}s`;
-}
-
-function renderRows(rows) {
-  const visibleRows = rows.slice(-VISIBLE_LINES);
-  while (visibleRows.length < VISIBLE_LINES) visibleRows.unshift("");
-  visibleRows.forEach((line, index) => {
-    sequenceLineEls[index].textContent = line;
-  });
-}
-
-function renderPiSequence() {
-  const typedDigits = PI_DIGITS.slice(0, piIndex);
-  const chunks = [];
-
-  for (let i = 0; i < typedDigits.length; i += DIGITS_PER_LINE) {
-    const part = typedDigits.slice(i, i + DIGITS_PER_LINE);
-    const formatted = part
-      .split("")
-      .map((digit, idx) => (i + idx === 0 ? `${digit},` : digit))
-      .join(" ");
-    chunks.push(formatted);
   }
   return numberSequences.prime[index];
 }
@@ -228,6 +202,8 @@ function updateDisplay() {
     renderNumberSequence();
     entryInputEl.value = typedValue;
   }
+
+  renderRows(chunks);
 }
 
 function registerCorrectAnswer() {
@@ -244,6 +220,7 @@ function handlePiDigitInput(digit) {
     setGameOver(`Feil siffer. Forventet ${expected}.`);
     return;
   }
+}
 
   piIndex += 1;
   registerCorrectAnswer();
@@ -285,6 +262,11 @@ function handleKeyPress(value) {
   if (value === "Enter") {
     submitNumberAnswer();
     return;
+  }
+
+  if (/^\d$/.test(value)) {
+    typedValue += value;
+    updateDisplay();
   }
 
   if (/^\d$/.test(value)) {
