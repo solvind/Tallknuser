@@ -1,64 +1,85 @@
-const size = 4;
-const minSwipeDistance = 30;
-const PI_DIGITS = "14159265358979323846264338327950288419716939937510";
-const TURN_TIME = 3000;
+const PI_DIGITS =
+  "314159265358979323846264338327950288419716939937510582097494459230781640628620";
+const TIMER_TICK_MS = 100;
+const BASE_TURN_MS = 3000;
+const DIGITS_PER_LINE = 12;
+const VISIBLE_LINES = 3;
 
-let board = Array.from({ length: size }, () => Array(size).fill(0));
-let score2048 = 0;
-let gameOver2048 = false;
-let won = false;
+const MODES = {
+  pi: {
+    title: "π",
+    description: "Trykk neste riktige siffer i π.",
+    rules: "Ingen Enter i dette spillet. Du har alltid 3 sekunder per siffer.",
+    startMessage: "Start med neste siffer etter 3,",
+  },
+  prime: {
+    title: "Prime",
+    description: "Skriv neste primtall og trykk Enter.",
+    rules:
+      "Tiden utvides jo større svarene blir: minst 3 sek, ellers like mange sekunder som antall siffer.",
+    startMessage: "Start med første primtall: 2",
+  },
+  fibonacci: {
+    title: "Fibonacci",
+    description: "Skriv neste Fibonacci-tall og trykk Enter.",
+    rules:
+      "Tiden utvides jo større svarene blir: minst 3 sek, ellers like mange sekunder som antall siffer.",
+    startMessage: "Start med første tall: 0",
+  },
+  pyramid: {
+    title: "Pyramid",
+    description: "Skriv neste tetraedertall og trykk Enter.",
+    rules:
+      "Tiden utvides jo større svarene blir: minst 3 sek, ellers like mange sekunder som antall siffer.",
+    startMessage: "Start med første tetraedertall: 1",
+  },
+};
 
-let touchStartX = 0;
-let touchStartY = 0;
-
-let piNextIndex = 0;
-let piScore = 0;
-let piGameOver = false;
-let piDeadline = 0;
-let piTimerInterval;
-
-const game2048El = document.getElementById("game-2048");
-const gamePiEl = document.getElementById("game-pi");
-const show2048Btn = document.getElementById("show-2048");
-const showPiBtn = document.getElementById("show-pi");
-
-const boardEl = document.getElementById("board");
-const score2048El = document.getElementById("score-2048");
-const status2048El = document.getElementById("status-2048");
-const restart2048Btn = document.getElementById("restart-2048");
-
-const sequenceEl = document.getElementById("sequence");
-const scorePiEl = document.getElementById("score-pi");
+const scoreEl = document.getElementById("score");
+const highscoreEl = document.getElementById("highscore");
 const timerEl = document.getElementById("timer");
-const statusPiEl = document.getElementById("status-pi");
-const restartPiBtn = document.getElementById("restart-pi");
-const digitButtons = [...document.querySelectorAll(".digit")];
+const statusEl = document.getElementById("status");
+const keypadEl = document.getElementById("keypad");
+const restartBtn = document.getElementById("restart");
+const modeTabs = Array.from(document.querySelectorAll(".mode-tab"));
+const rulesToggleBtn = document.getElementById("rules-toggle");
+const rulesPanel = document.getElementById("rules-panel");
+const gameTitleEl = document.getElementById("game-title");
+const gameDescriptionEl = document.getElementById("game-description");
+const gameRulesEl = document.getElementById("game-rules");
+const entryWrapperEl = document.getElementById("entry-wrapper");
+const entryInputEl = document.getElementById("entry-input");
 
-function setActiveGame(game) {
-  const is2048 = game === "2048";
-  game2048El.classList.toggle("active", is2048);
-  gamePiEl.classList.toggle("active", !is2048);
-  show2048Btn.classList.toggle("active", is2048);
-  showPiBtn.classList.toggle("active", !is2048);
+const sequenceLineEls = [
+  document.getElementById("sequence-line-1"),
+  document.getElementById("sequence-line-2"),
+  document.getElementById("sequence-line-3"),
+];
+
+let activeMode = "pi";
+let isGameOver = false;
+let turnStart = 0;
+let timerId;
+let score = 1;
+let piIndex = 1;
+let numberGameIndex = 0;
+let typedValue = "";
+let sequenceRows = [];
+
+const numberSequences = {
+  prime: [2],
+  fibonacci: [0],
+  pyramid: [1],
+};
+
+function loadHighscore(mode) {
+  return Number(localStorage.getItem(`${mode}-highscore`) ?? 1);
 }
 
-function init2048() {
-  board = Array.from({ length: size }, () => Array(size).fill(0));
-  score2048 = 0;
-  gameOver2048 = false;
-  won = false;
-  addRandomTile();
-  addRandomTile();
-  update2048UI();
-  status2048El.textContent = "";
-}
-
-function getEmptyCells() {
-  const empty = [];
-  for (let row = 0; row < size; row++) {
-    for (let col = 0; col < size; col++) {
-      if (board[row][col] === 0) empty.push([row, col]);
-    }
+function saveHighscore(mode, value) {
+  const current = loadHighscore(mode);
+  if (value > current) {
+    localStorage.setItem(`${mode}-highscore`, String(value));
   }
 }
 
@@ -66,18 +87,22 @@ function updateHighscore() {
   highscoreEl.textContent = String(loadHighscore(activeMode));
 }
 
-function slideAndMerge(line) {
-  const compact = line.filter((value) => value !== 0);
-  const result = [];
-
-  for (let i = 0; i < compact.length; i++) {
-    if (compact[i] === compact[i + 1]) {
-      const merged = compact[i] * 2;
-      result.push(merged);
-      score2048 += merged;
-      i++;
-    } else {
-      result.push(compact[i]);
+function getPrimeAt(index) {
+  while (numberSequences.prime.length <= index) {
+    let candidate = numberSequences.prime[numberSequences.prime.length - 1] + 1;
+    while (true) {
+      let isPrime = true;
+      for (let i = 2; i * i <= candidate; i += 1) {
+        if (candidate % i === 0) {
+          isPrime = false;
+          break;
+        }
+      }
+      if (isPrime) {
+        numberSequences.prime.push(candidate);
+        break;
+      }
+      candidate += 1;
     }
 
     timerEl.textContent = `${(remaining / 1000).toFixed(1)}s`;
@@ -94,10 +119,20 @@ function renderRows(rows) {
   });
 }
 
-function move(direction) {
-  if (gameOver2048) return;
+function renderPiSequence() {
+  const typedDigits = PI_DIGITS.slice(0, piIndex);
+  const chunks = [];
 
-  let moved = false;
+  for (let i = 0; i < typedDigits.length; i += DIGITS_PER_LINE) {
+    const part = typedDigits.slice(i, i + DIGITS_PER_LINE);
+    const formatted = part
+      .split("")
+      .map((digit, idx) => (i + idx === 0 ? `${digit},` : digit))
+      .join(" ");
+    chunks.push(formatted);
+  }
+  return numberSequences.prime[index];
+}
 
 function getFibonacciAt(index) {
   while (numberSequences.fibonacci.length <= index) {
@@ -108,10 +143,11 @@ function getFibonacciAt(index) {
   return numberSequences.fibonacci[index];
 }
 
-  if (moved) {
-    addRandomTile();
-    update2048UI();
-    evaluateGameState();
+function getPyramidAt(index) {
+  while (numberSequences.pyramid.length <= index) {
+    const n = numberSequences.pyramid.length + 1;
+    const value = (n * (n + 1) * (n + 2)) / 6;
+    numberSequences.pyramid.push(value);
   }
   return numberSequences.pyramid[index];
 }
@@ -156,22 +192,33 @@ function resetTurnTimer() {
   timerEl.textContent = `${(turnLimit / 1000).toFixed(1)}s`;
 }
 
-function evaluateGameState() {
-  if (!won && board.flat().includes(2048)) {
-    won = true;
-    status2048El.textContent = "🎉 Du nådde 2048! Fortsett gjerne videre.";
-  }
+function renderRows(rows) {
+  const visibleRows = rows.slice(-VISIBLE_LINES);
+  while (visibleRows.length < VISIBLE_LINES) visibleRows.unshift("");
+  visibleRows.forEach((line, index) => {
+    sequenceLineEls[index].textContent = line;
+  });
+}
 
-  if (!hasMoves()) {
-    gameOver2048 = true;
-    status2048El.textContent = "💀 Game over! Ingen trekk igjen.";
+function renderPiSequence() {
+  const typedDigits = PI_DIGITS.slice(0, piIndex);
+  const chunks = [];
+
+  for (let i = 0; i < typedDigits.length; i += DIGITS_PER_LINE) {
+    const part = typedDigits.slice(i, i + DIGITS_PER_LINE);
+    const formatted = part
+      .split("")
+      .map((digit, idx) => (i + idx === 0 ? `${digit},` : digit))
+      .join(" ");
+    chunks.push(formatted);
   }
 
   renderRows(chunks);
 }
 
-function update2048UI() {
-  boardEl.innerHTML = "";
+function renderNumberSequence() {
+  renderRows(sequenceRows);
+}
 
 function updateDisplay() {
   scoreEl.textContent = String(score);
@@ -183,26 +230,52 @@ function updateDisplay() {
   }
 }
 
-  score2048El.textContent = String(score2048);
+function registerCorrectAnswer() {
+  score += 1;
+  saveHighscore(activeMode, score);
+  updateHighscore();
+  updateDisplay();
 }
 
-function onDirectionInput(direction) {
-  if (!game2048El.classList.contains("active")) return;
-  move(direction);
+function handlePiDigitInput(digit) {
+  const expected = getExpectedValue();
+
+  if (digit !== expected) {
+    setGameOver(`Feil siffer. Forventet ${expected}.`);
+    return;
+  }
+
+  piIndex += 1;
+  registerCorrectAnswer();
+
+  if (piIndex >= PI_DIGITS.length) {
+    setGameOver("Du fullførte alle sifrene i denne versjonen!");
+    return;
+  }
+
+  statusEl.textContent = "Riktig!";
+  resetTurnTimer();
 }
 
-function handleTouchStart(event) {
-  if (!game2048El.classList.contains("active")) return;
-  const touch = event.changedTouches[0];
-  touchStartX = touch.clientX;
-  touchStartY = touch.clientY;
+function submitNumberAnswer() {
+  if (!typedValue) return;
+
+  const expected = getExpectedValue();
+  if (typedValue !== expected) {
+    setGameOver(`Feil svar. Forventet ${expected}.`);
+    return;
+  }
+
+  sequenceRows.push(typedValue);
+  typedValue = "";
+  numberGameIndex += 1;
+  registerCorrectAnswer();
+  statusEl.textContent = "Riktig!";
+  resetTurnTimer();
 }
 
-function handleTouchEnd(event) {
-  if (!game2048El.classList.contains("active")) return;
-  const touch = event.changedTouches[0];
-  const deltaX = touch.clientX - touchStartX;
-  const deltaY = touch.clientY - touchStartY;
+function handleKeyPress(value) {
+  if (isGameOver) return;
 
   if (activeMode === "pi") {
     if (/^\d$/.test(value)) handlePiDigitInput(value);
@@ -224,89 +297,36 @@ function handleTouchEnd(event) {
   });
 }
 
-function setPiTimerDisplay() {
-  if (piGameOver || !piDeadline) {
-    timerEl.textContent = "3.0";
-    return;
-  }
+function buildKeypad() {
+  keypadEl.innerHTML = "";
+  const digits = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "0"];
+  digits.forEach((digit) => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "key";
+    button.textContent = digit;
+    button.addEventListener("click", () => handleKeyPress(digit));
+    keypadEl.appendChild(button);
+  });
 
-  const leftMs = Math.max(0, piDeadline - Date.now());
-  timerEl.textContent = (leftMs / 1000).toFixed(1);
+  const enterBtn = document.createElement("button");
+  enterBtn.type = "button";
+  enterBtn.id = "enter-key";
+  enterBtn.className = "key enter-key";
+  enterBtn.textContent = "Enter";
+  enterBtn.addEventListener("click", () => handleKeyPress("Enter"));
+  keypadEl.appendChild(enterBtn);
+
+  enterBtn.hidden = activeMode === "pi";
 }
 
-function startPiTurnTimer() {
-  piDeadline = Date.now() + TURN_TIME;
-  setPiTimerDisplay();
-
-  clearInterval(piTimerInterval);
-  piTimerInterval = setInterval(() => {
-    setPiTimerDisplay();
-    if (Date.now() >= piDeadline) {
-      endPiGame("⏱️ Tiden gikk ut! Game over.");
-    }
-  }, 100);
-}
-
-function endPiGame(message) {
-  piGameOver = true;
-  clearInterval(piTimerInterval);
-  piTimerInterval = undefined;
-  statusPiEl.textContent = message;
-  setPiTimerDisplay();
-}
-
-function updatePiScore() {
-  scorePiEl.textContent = String(piScore);
-}
-
-function handlePiDigitInput(digit) {
-  if (piGameOver) return;
-
-  const expectedDigit = PI_DIGITS[piNextIndex];
-
-  if (digit !== expectedDigit) {
-    endPiGame(`❌ Feil! Forventet ${expectedDigit}. Trykk ↺ for ny runde.`);
-    return;
-  }
-
-  sequenceEl.textContent += digit;
-  piNextIndex += 1;
-  piScore += 1;
-  updatePiScore();
-
-  if (piNextIndex >= PI_DIGITS.length) {
-    endPiGame("🏆 Utrolig! Du klarte alle sifrene som er lagt inn.");
-    return;
-  }
-
-  statusPiEl.textContent = "✅ Riktig! Fortsett.";
-  startPiTurnTimer();
-}
-
-function initPi() {
-  piNextIndex = 0;
-  piScore = 0;
-  piGameOver = false;
-  piDeadline = 0;
-  clearInterval(piTimerInterval);
-  piTimerInterval = undefined;
-
-  sequenceEl.textContent = "3,";
-  updatePiScore();
-  timerEl.textContent = "3.0";
-  statusPiEl.textContent = "Spillet starter når du trykker et tall.";
-}
-
-document.addEventListener("keydown", (event) => {
-  const map = {
-    ArrowLeft: "left",
-    ArrowUp: "up",
-    ArrowRight: "right",
-    ArrowDown: "down",
-  };
-
-  const direction = map[event.key];
-  if (!direction || !game2048El.classList.contains("active")) return;
+function setMode(mode) {
+  activeMode = mode;
+  modeTabs.forEach((btn) => {
+    const isActive = btn.dataset.mode === mode;
+    btn.classList.toggle("active", isActive);
+    btn.setAttribute("aria-selected", String(isActive));
+  });
 
   const meta = MODES[mode];
   if (gameTitleEl) gameTitleEl.textContent = meta.title;
@@ -342,21 +362,21 @@ function init() {
   resetTurnTimer();
 }
 
-restart2048Btn.addEventListener("click", init2048);
-restartPiBtn.addEventListener("click", initPi);
-
-digitButtons.forEach((button) => {
-  button.addEventListener("click", () => {
-    if (!piDeadline && !piGameOver) {
-      startPiTurnTimer();
-    }
-    handlePiDigitInput(button.dataset.digit);
+restartBtn.addEventListener("click", init);
+if (rulesToggleBtn && rulesPanel) {
+  rulesToggleBtn.addEventListener("click", () => {
+    const expanded = rulesToggleBtn.getAttribute("aria-expanded") === "true";
+    rulesToggleBtn.setAttribute("aria-expanded", String(!expanded));
+    rulesPanel.hidden = expanded;
   });
+}
+
+modeTabs.forEach((btn) => {
+  btn.addEventListener("click", () => setMode(btn.dataset.mode));
 });
 
-show2048Btn.addEventListener("click", () => setActiveGame("2048"));
-showPiBtn.addEventListener("click", () => setActiveGame("pi"));
-
-init2048();
-initPi();
-setActiveGame("2048");
+if (modeTabs.length > 0) {
+  setMode("pi");
+} else {
+  init();
+}
