@@ -3,27 +3,41 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>2048</title>
+    <title>Pi</title>
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
     <main class="app">
       <header class="top-bar">
         <div>
-          <h1>2048</h1>
-          <p>Bruk piltastene eller sveip for å spille.</p>
+          <h1>Pi</h1>
+          <p>Trykk neste riktige siffer i π innen 3 sekunder.</p>
         </div>
-        <div class="score-panel">
-          <div class="score-box">
-            <span>Poeng</span>
-            <strong id="score">0</strong>
-          </div>
-          <button id="restart" type="button">Start på nytt</button>
-        </div>
+        <button id="restart" type="button">Start på nytt</button>
       </header>
 
-      <section class="board" id="board" aria-label="2048 spillebrett"></section>
-      <p id="status" class="status" aria-live="polite"></p>
+      <section class="display" aria-live="polite">
+        <div class="display-row">
+          <span>Riktige siffer</span>
+          <strong id="score">1</strong>
+        </div>
+        <div class="display-row">
+          <span>Tid igjen</span>
+          <strong id="timer">3.0s</strong>
+        </div>
+
+        <div class="sequence-panel" aria-label="Pi-sekvens med tre linjer">
+          <span class="sequence-label">Sekvens</span>
+          <div class="sequence-window" id="sequence-window">
+            <div class="sequence-line" id="sequence-line-1"></div>
+            <div class="sequence-line" id="sequence-line-2"></div>
+            <div class="sequence-line" id="sequence-line-3">3,</div>
+          </div>
+        </div>
+      </section>
+
+      <section class="keypad" id="keypad" aria-label="Talltastatur"></section>
+      <p id="status" class="status" aria-live="assertive"></p>
     </main>
 
     <script src="script.js"></script>

@@ -1,8 +1,8 @@
 :root {
   color-scheme: light;
   font-family: "Inter", "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-  background: #faf8ef;
-  color: #776e65;
+  background: #1f1f27;
+  color: #f4f5f9;
 }
 
 * {
@@ -18,102 +18,127 @@ body {
 }
 
 .app {
-  width: min(100%, 460px);
+  width: min(100%, 420px);
+  background: #2a2d3a;
+  border-radius: 18px;
+  padding: 1rem;
+  box-shadow: 0 18px 45px rgba(0, 0, 0, 0.35);
 }
 
 .top-bar {
   display: flex;
   justify-content: space-between;
-  align-items: end;
   gap: 1rem;
-  margin-bottom: 1rem;
+  align-items: flex-start;
 }
 
 h1 {
   margin: 0;
-  font-size: clamp(2rem, 6vw, 3rem);
-  color: #776e65;
+  font-size: clamp(1.8rem, 5vw, 2.3rem);
 }
 
 p {
-  margin: 0.3rem 0 0;
-}
-
-.score-panel {
-  display: flex;
-  gap: 0.5rem;
-  align-items: center;
-}
-
-.score-box {
-  background: #bbada0;
-  border-radius: 8px;
-  padding: 0.5rem 0.75rem;
-  color: #f9f6f2;
-  text-transform: uppercase;
-  font-size: 0.7rem;
-  text-align: center;
-  line-height: 1.2;
-}
-
-.score-box strong {
-  display: block;
-  font-size: 1.2rem;
+  margin: 0.35rem 0 0;
+  color: #cdd0dc;
 }
 
 button {
   border: none;
-  border-radius: 8px;
+  border-radius: 10px;
   padding: 0.7rem 0.9rem;
-  background: #8f7a66;
-  color: #f9f6f2;
+  background: #6a7cff;
+  color: #ffffff;
   font-weight: 700;
   cursor: pointer;
 }
 
-button:hover {
-  filter: brightness(1.05);
+.display {
+  background: #11131a;
+  border-radius: 12px;
+  padding: 0.8rem;
+  margin: 1rem 0;
 }
 
-.board {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 0.7rem;
-  background: #bbada0;
+.display-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 1rem;
+}
+
+.display-row + .display-row {
+  margin-top: 0.5rem;
+}
+
+.display-row span {
+  color: #9ea3ba;
+  font-size: 0.9rem;
+}
+
+.display-row strong {
+  font-size: 1.1rem;
+  letter-spacing: 0.04em;
+}
+
+.sequence-panel {
+  margin-top: 0.7rem;
+}
+
+.sequence-label {
+  display: block;
+  color: #9ea3ba;
+  font-size: 0.9rem;
+  margin-bottom: 0.35rem;
+}
+
+.sequence-window {
   border-radius: 10px;
-  padding: 0.7rem;
-}
-
-.tile {
-  border-radius: 8px;
-  aspect-ratio: 1;
+  background: #0a0c11;
+  padding: 0.55rem 0.65rem;
+  min-height: 5.2rem;
   display: grid;
-  place-items: center;
+  align-content: center;
+  gap: 0.2rem;
+  overflow: hidden;
+}
+
+.sequence-line {
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+  font-size: 1.05rem;
+  letter-spacing: 0.06em;
+  min-height: 1.2rem;
+  color: #f4f5f9;
+}
+
+.keypad {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.65rem;
+}
+
+.key {
+  font-size: 1.6rem;
   font-weight: 800;
-  font-size: clamp(1.2rem, 6vw, 2rem);
-  background: rgba(238, 228, 218, 0.35);
-  color: #776e65;
+  padding: 1rem 0;
+  background: #3a3f52;
+  border-radius: 14px;
 }
 
-.tile[data-value="0"] {
-  color: transparent;
+.key:hover {
+  filter: brightness(1.15);
 }
 
-.tile[data-value="2"] { background: #eee4da; }
-.tile[data-value="4"] { background: #ede0c8; }
-.tile[data-value="8"] { background: #f2b179; color: #f9f6f2; }
-.tile[data-value="16"] { background: #f59563; color: #f9f6f2; }
-.tile[data-value="32"] { background: #f67c5f; color: #f9f6f2; }
-.tile[data-value="64"] { background: #f65e3b; color: #f9f6f2; }
-.tile[data-value="128"] { background: #edcf72; color: #f9f6f2; font-size: clamp(1rem, 5vw, 1.6rem); }
-.tile[data-value="256"] { background: #edcc61; color: #f9f6f2; font-size: clamp(1rem, 5vw, 1.6rem); }
-.tile[data-value="512"] { background: #edc850; color: #f9f6f2; font-size: clamp(1rem, 5vw, 1.6rem); }
-.tile[data-value="1024"] { background: #edc53f; color: #f9f6f2; font-size: clamp(0.9rem, 4vw, 1.3rem); }
-.tile[data-value="2048"] { background: #edc22e; color: #f9f6f2; font-size: clamp(0.9rem, 4vw, 1.3rem); }
-.tile[data-value="4096"] { background: #3c3a32; color: #f9f6f2; font-size: clamp(0.8rem, 3.5vw, 1.2rem); }
+.keypad .key:last-child {
+  grid-column: 2;
+}
+
+.keypad.disabled {
+  pointer-events: none;
+  opacity: 0.55;
+}
 
 .status {
-  min-height: 1.4rem;
-  margin-top: 0.75rem;
-  font-weight: 600;
+  min-height: 1.3rem;
+  margin-top: 0.9rem;
+  font-weight: 700;
 }

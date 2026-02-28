@@ -1,200 +1,142 @@
-const size = 4;
-const minSwipeDistance = 30;
+const PI_DIGITS =
+  "3141592653589793238462643383279502884197169399375105820974944592";
+const TURN_TIME_MS = 3000;
+const TIMER_TICK_MS = 100;
+const DIGITS_PER_LINE = 12;
+const VISIBLE_LINES = 3;
 
-let board = Array.from({ length: size }, () => Array(size).fill(0));
-let score = 0;
-let gameOver = false;
-let won = false;
+let currentIndex = 1;
+let isGameOver = false;
+let timerId;
+let turnStart = 0;
 
-let touchStartX = 0;
-let touchStartY = 0;
-
-const boardEl = document.getElementById("board");
 const scoreEl = document.getElementById("score");
+const timerEl = document.getElementById("timer");
 const statusEl = document.getElementById("status");
+const keypadEl = document.getElementById("keypad");
 const restartBtn = document.getElementById("restart");
+const sequenceLineEls = [
+  document.getElementById("sequence-line-1"),
+  document.getElementById("sequence-line-2"),
+  document.getElementById("sequence-line-3"),
+];
 
-function init() {
-  board = Array.from({ length: size }, () => Array(size).fill(0));
-  score = 0;
-  gameOver = false;
-  won = false;
-  addRandomTile();
-  addRandomTile();
-  updateUI();
-  statusEl.textContent = "";
+function buildKeypad() {
+  const keys = ["1", "2", "3", "4", "5", "6", "7", "8", "9", "0"];
+  keypadEl.innerHTML = "";
+
+  keys.forEach((digit) => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.className = "key";
+    button.textContent = digit;
+    button.setAttribute("aria-label", `Siffer ${digit}`);
+    button.addEventListener("click", () => handleDigitInput(digit));
+    keypadEl.appendChild(button);
+  });
 }
 
-function getEmptyCells() {
-  const empty = [];
-  for (let row = 0; row < size; row++) {
-    for (let col = 0; col < size; col++) {
-      if (board[row][col] === 0) empty.push([row, col]);
+function setGameOver(message) {
+  isGameOver = true;
+  clearInterval(timerId);
+  timerEl.textContent = "0.0s";
+  statusEl.textContent = message;
+  keypadEl.classList.add("disabled");
+}
+
+function resetTurnTimer() {
+  clearInterval(timerId);
+  turnStart = Date.now();
+
+  timerId = setInterval(() => {
+    const elapsed = Date.now() - turnStart;
+    const remaining = TURN_TIME_MS - elapsed;
+
+    if (remaining <= 0) {
+      setGameOver("⏰ Tiden gikk ut! Game over.");
+      return;
     }
-  }
-  return empty;
+
+    timerEl.textContent = `${(remaining / 1000).toFixed(1)}s`;
+  }, TIMER_TICK_MS);
+
+  timerEl.textContent = "3.0s";
 }
 
-function addRandomTile() {
-  const empty = getEmptyCells();
-  if (!empty.length) return;
-  const [row, col] = empty[Math.floor(Math.random() * empty.length)];
-  board[row][col] = Math.random() < 0.9 ? 2 : 4;
+function formatChunk(chunk, chunkStartIndex) {
+  return chunk
+    .split("")
+    .map((digit, digitIndex) => {
+      const globalIndex = chunkStartIndex + digitIndex;
+      return globalIndex === 0 ? `${digit},` : digit;
+    })
+    .join(" ");
 }
 
-function slideAndMerge(line) {
-  const compact = line.filter((value) => value !== 0);
-  const result = [];
+function renderSequenceLines() {
+  const typedDigits = PI_DIGITS.slice(0, currentIndex);
+  const chunks = [];
 
-  for (let i = 0; i < compact.length; i++) {
-    if (compact[i] === compact[i + 1]) {
-      const merged = compact[i] * 2;
-      result.push(merged);
-      score += merged;
-      i++;
-    } else {
-      result.push(compact[i]);
-    }
-  }
-
-  while (result.length < size) result.push(0);
-  return result;
-}
-
-function rotateClockwise(matrix) {
-  return matrix[0].map((_, i) => matrix.map((row) => row[i]).reverse());
-}
-
-function moveLeft() {
-  const before = JSON.stringify(board);
-  board = board.map(slideAndMerge);
-  return before !== JSON.stringify(board);
-}
-
-function move(direction) {
-  if (gameOver) return;
-
-  let moved = false;
-
-  if (direction === "left") {
-    moved = moveLeft();
-  } else if (direction === "up") {
-    board = rotateClockwise(rotateClockwise(rotateClockwise(board)));
-    moved = moveLeft();
-    board = rotateClockwise(board);
-  } else if (direction === "right") {
-    board = rotateClockwise(rotateClockwise(board));
-    moved = moveLeft();
-    board = rotateClockwise(rotateClockwise(board));
-  } else if (direction === "down") {
-    board = rotateClockwise(board);
-    moved = moveLeft();
-    board = rotateClockwise(rotateClockwise(rotateClockwise(board)));
+  for (let i = 0; i < typedDigits.length; i += DIGITS_PER_LINE) {
+    chunks.push({
+      chunk: typedDigits.slice(i, i + DIGITS_PER_LINE),
+      startIndex: i,
+    });
   }
 
-  if (moved) {
-    addRandomTile();
-    updateUI();
-    evaluateGameState();
+  const visibleChunks = chunks.slice(-VISIBLE_LINES);
+  while (visibleChunks.length < VISIBLE_LINES) {
+    visibleChunks.unshift({ chunk: "", startIndex: 0 });
   }
+
+  visibleChunks.forEach(({ chunk, startIndex }, index) => {
+    sequenceLineEls[index].textContent = formatChunk(chunk, startIndex);
+  });
 }
 
-function hasMoves() {
-  if (getEmptyCells().length > 0) return true;
+function updateDisplay() {
+  scoreEl.textContent = String(currentIndex);
+  renderSequenceLines();
+}
 
-  for (let row = 0; row < size; row++) {
-    for (let col = 0; col < size; col++) {
-      const value = board[row][col];
-      if (
-        value === board[row + 1]?.[col] ||
-        value === board[row - 1]?.[col] ||
-        value === board[row]?.[col + 1] ||
-        value === board[row]?.[col - 1]
-      ) {
-        return true;
-      }
-    }
+function handleWinIfCompleted() {
+  if (currentIndex >= PI_DIGITS.length) {
+    setGameOver("🏆 Utrolig! Du fullførte alle sifrene som er med i denne versjonen.");
+    return true;
   }
 
   return false;
 }
 
-function evaluateGameState() {
-  if (!won && board.flat().includes(2048)) {
-    won = true;
-    statusEl.textContent = "🎉 Du nådde 2048! Fortsett gjerne videre.";
-  }
+function handleDigitInput(digit) {
+  if (isGameOver) return;
 
-  if (!hasMoves()) {
-    gameOver = true;
-    statusEl.textContent = "💀 Game over! Ingen trekk igjen.";
-  }
-}
-
-function updateUI() {
-  boardEl.innerHTML = "";
-
-  for (let row = 0; row < size; row++) {
-    for (let col = 0; col < size; col++) {
-      const value = board[row][col];
-      const tile = document.createElement("div");
-      tile.className = "tile";
-      tile.dataset.value = String(value);
-      tile.textContent = value === 0 ? "" : String(value);
-      boardEl.appendChild(tile);
-    }
-  }
-
-  scoreEl.textContent = String(score);
-}
-
-function onDirectionInput(direction) {
-  move(direction);
-}
-
-function handleTouchStart(event) {
-  const touch = event.changedTouches[0];
-  touchStartX = touch.clientX;
-  touchStartY = touch.clientY;
-}
-
-function handleTouchEnd(event) {
-  const touch = event.changedTouches[0];
-  const deltaX = touch.clientX - touchStartX;
-  const deltaY = touch.clientY - touchStartY;
-
-  if (
-    Math.abs(deltaX) < minSwipeDistance &&
-    Math.abs(deltaY) < minSwipeDistance
-  ) {
+  const expected = PI_DIGITS[currentIndex];
+  if (digit !== expected) {
+    setGameOver(`Feil siffer. Forventet ${expected}. Game over.`);
     return;
   }
 
-  if (Math.abs(deltaX) > Math.abs(deltaY)) {
-    onDirectionInput(deltaX > 0 ? "right" : "left");
-  } else {
-    onDirectionInput(deltaY > 0 ? "down" : "up");
-  }
+  currentIndex += 1;
+  updateDisplay();
+
+  if (handleWinIfCompleted()) return;
+
+  statusEl.textContent = "✅ Riktig! Fortsett.";
+  resetTurnTimer();
 }
 
-document.addEventListener("keydown", (event) => {
-  const map = {
-    ArrowLeft: "left",
-    ArrowUp: "up",
-    ArrowRight: "right",
-    ArrowDown: "down",
-  };
-
-  const direction = map[event.key];
-  if (!direction) return;
-
-  event.preventDefault();
-  onDirectionInput(direction);
-});
-
-boardEl.addEventListener("touchstart", handleTouchStart, { passive: true });
-boardEl.addEventListener("touchend", handleTouchEnd, { passive: true });
+function init() {
+  clearInterval(timerId);
+  currentIndex = 1;
+  isGameOver = false;
+  statusEl.textContent = "Start med neste siffer etter 3.";
+  keypadEl.classList.remove("disabled");
+  updateDisplay();
+  resetTurnTimer();
+}
 
 restartBtn.addEventListener("click", init);
 
+buildKeypad();
 init();
