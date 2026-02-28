@@ -15,10 +15,50 @@ body {
   display: grid;
   place-items: center;
   padding: 1rem;
+  background: #faf8ef;
 }
 
 .app {
   width: min(100%, 460px);
+}
+
+.app-header h1 {
+  margin: 0;
+  font-size: clamp(1.8rem, 6vw, 2.5rem);
+}
+
+.app-header p {
+  margin: 0.3rem 0 0;
+}
+
+.game-switcher {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.6rem;
+  margin: 1rem 0;
+}
+
+.switch {
+  border: 1px solid #b8aa9b;
+  border-radius: 8px;
+  padding: 0.7rem;
+  background: #ece2d7;
+  color: #5a5249;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.switch.active {
+  background: #8f7a66;
+  color: #f9f6f2;
+}
+
+.game-panel {
+  display: none;
+}
+
+.game-panel.active {
+  display: block;
 }
 
 .top-bar {
@@ -29,9 +69,9 @@ body {
   margin-bottom: 1rem;
 }
 
-h1 {
+h2 {
   margin: 0;
-  font-size: clamp(2rem, 6vw, 3rem);
+  font-size: 2rem;
   color: #776e65;
 }
 
@@ -95,10 +135,7 @@ button:hover {
   color: #776e65;
 }
 
-.tile[data-value="0"] {
-  color: transparent;
-}
-
+.tile[data-value="0"] { color: transparent; }
 .tile[data-value="2"] { background: #eee4da; }
 .tile[data-value="4"] { background: #ede0c8; }
 .tile[data-value="8"] { background: #f2b179; color: #f9f6f2; }
@@ -111,6 +148,54 @@ button:hover {
 .tile[data-value="1024"] { background: #edc53f; color: #f9f6f2; font-size: clamp(0.9rem, 4vw, 1.3rem); }
 .tile[data-value="2048"] { background: #edc22e; color: #f9f6f2; font-size: clamp(0.9rem, 4vw, 1.3rem); }
 .tile[data-value="4096"] { background: #3c3a32; color: #f9f6f2; font-size: clamp(0.8rem, 3.5vw, 1.2rem); }
+
+.display {
+  margin-top: 1rem;
+  background: #f0e7dc;
+  border-radius: 12px;
+  padding: 0.9rem;
+  border: 1px solid #d6c5b3;
+}
+
+.label {
+  margin: 0;
+  color: #7d6f61;
+  font-size: 0.85rem;
+}
+
+.sequence {
+  margin: 0.3rem 0 0;
+  font-size: 1.6rem;
+  min-height: 2rem;
+  font-weight: 700;
+  word-break: break-word;
+}
+
+.stats {
+  margin-top: 0.6rem;
+  display: flex;
+  justify-content: space-between;
+}
+
+.keypad {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 0.7rem;
+  margin-top: 0.8rem;
+}
+
+.keypad button {
+  min-height: 64px;
+  font-size: 1.2rem;
+}
+
+.restart {
+  background: #6f6255;
+}
+
+.spacer {
+  visibility: hidden;
+}
 
 .status {
   min-height: 1.4rem;
