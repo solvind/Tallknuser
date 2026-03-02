@@ -29,3 +29,35 @@ document.addEventListener('DOMContentLoaded', () => {
         console.error('Element with ID yourElementId not found!');
     }
 });
+// Andre funksjoner i script.js
+// ...
+
+// Her begynner touch-funksjonene:
+
+document.addEventListener('DOMContentLoaded', () => {
+    console.log('DOMContentLoaded fired');
+    
+    const element = document.getElementById('yourElementId');
+
+    if (element) {
+        console.log('Element with ID yourElementId found:', element);
+
+        // Bind touch event listeners
+        element.addEventListener('touchstart', (event) => {
+            event.preventDefault();
+            console.log('Touch Start triggered:', event);
+        }, { passive: false });
+
+        element.addEventListener('touchmove', (event) => {
+            event.preventDefault();
+            console.log('Touch Move triggered:', event);
+        }, { passive: false });
+
+        element.addEventListener('touchend', (event) => {
+            event.preventDefault();
+            console.log('Touch End triggered:', event);
+        }, { passive: false });
+    } else {
+        console.error('Element with ID yourElementId not found!');
+    }
+});
