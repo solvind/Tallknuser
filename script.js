@@ -9,28 +9,28 @@ const MODES = {
   pi: {
     title: "π",
     description: "Trykk neste riktige siffer i π.",
-    rules: "Ingen Enter i dette spillet. Du har alltid 3 sekunder per siffer.",
+    rules: "Ingen Enter i dette spillet. Du har alltid 3 sekunder per siffer (eller slå av tidtaker).",
     startMessage: "Start med neste siffer etter 3,",
   },
   prime: {
     title: "Prime",
     description: "Skriv neste primtall og trykk Enter.",
     rules:
-      "Tiden utvides jo større svarene blir: minst 3 sek, ellers like mange sekunder som antall siffer.",
+      "Tiden utvides jo større svarene blir: minst 3 sek, ellers like mange sekunder som antall siffer (kan slås av med Tidtaker-knappen).",
     startMessage: "Start med første primtall: 2",
   },
   fibonacci: {
     title: "Fibonacci",
     description: "Skriv neste Fibonacci-tall og trykk Enter.",
     rules:
-      "Tiden utvides jo større svarene blir: minst 3 sek, ellers like mange sekunder som antall siffer.",
+      "Tiden utvides jo større svarene blir: minst 3 sek, ellers like mange sekunder som antall siffer (kan slås av med Tidtaker-knappen).",
     startMessage: "Start med første tall: 0",
   },
   pyramid: {
     title: "Pyramid",
     description: "Skriv neste tetraedertall og trykk Enter.",
     rules:
-      "Tiden utvides jo større svarene blir: minst 3 sek, ellers like mange sekunder som antall siffer.",
+      "Tiden utvides jo større svarene blir: minst 3 sek, ellers like mange sekunder som antall siffer (kan slås av med Tidtaker-knappen).",
     startMessage: "Start med første tetraedertall: 1",
   },
 };
@@ -41,6 +41,7 @@ const timerEl = document.getElementById("timer");
 const statusEl = document.getElementById("status");
 const keypadEl = document.getElementById("keypad");
 const restartBtn = document.getElementById("restart");
+const timerToggleBtn = document.getElementById("timer-toggle");
 const modeTabs = Array.from(document.querySelectorAll(".mode-tab"));
 const rulesToggleBtn = document.getElementById("rules-toggle");
 const rulesPanel = document.getElementById("rules-panel");
@@ -65,12 +66,20 @@ let piIndex = 1;
 let numberGameIndex = 0;
 let typedValue = "";
 let sequenceRows = [];
+let timerEnabled = true;
 
 const numberSequences = {
   prime: [2],
   fibonacci: [0],
   pyramid: [1],
 };
+
+function updateTimerToggleUi() {
+  if (!timerToggleBtn) return;
+  timerToggleBtn.classList.toggle("active", timerEnabled);
+  timerToggleBtn.setAttribute("aria-pressed", String(timerEnabled));
+  timerToggleBtn.textContent = timerEnabled ? "På" : "Av";
+}
 
 function loadHighscore(mode) {
   return Number(localStorage.getItem(`${mode}-highscore`) ?? 1);
@@ -142,13 +151,19 @@ function getTurnLimitMs() {
 function setGameOver(message) {
   isGameOver = true;
   clearInterval(timerId);
-  timerEl.textContent = "0.0s";
+  timerEl.textContent = timerEnabled ? "0.0s" : "Av";
   statusEl.textContent = message;
   keypadEl.classList.add("disabled");
 }
 
 function resetTurnTimer() {
   clearInterval(timerId);
+
+  if (!timerEnabled) {
+    timerEl.textContent = "Av";
+    return;
+  }
+
   const turnLimit = getTurnLimitMs();
   turnStart = Date.now();
 
@@ -273,6 +288,18 @@ function handleKeyPress(value) {
   }
 }
 
+function toggleTimerEnabled() {
+  timerEnabled = !timerEnabled;
+  updateTimerToggleUi();
+
+  if (isGameOver) {
+    timerEl.textContent = timerEnabled ? "0.0s" : "Av";
+    return;
+  }
+
+  resetTurnTimer();
+}
+
 function handleKeyboardInput(event) {
   const allowedKeys = ["Enter", "Backspace"];
   if (/^\d$/.test(event.key) || allowedKeys.includes(event.key)) {
@@ -347,6 +374,9 @@ function init() {
 }
 
 restartBtn.addEventListener("click", init);
+if (timerToggleBtn) {
+  timerToggleBtn.addEventListener("click", toggleTimerEnabled);
+}
 document.addEventListener("keydown", handleKeyboardInput);
 if (rulesToggleBtn && rulesPanel) {
   rulesToggleBtn.addEventListener("click", () => {
@@ -355,6 +385,8 @@ if (rulesToggleBtn && rulesPanel) {
     rulesPanel.hidden = expanded;
   });
 }
+
+updateTimerToggleUi();
 
 modeTabs.forEach((btn) => {
   btn.addEventListener("click", () => setMode(btn.dataset.mode));
