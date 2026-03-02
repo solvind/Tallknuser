@@ -1,5 +1,66 @@
 // ─── Spilldata ────────────────────────────────────────────────────────────────
 
+const PI_DIGITS = '31415926535897932384626433832795028841971693993751058209749445923078164062862089986280348253421170679';
+
+const MODES = {
+  pi: {
+    title: 'π – Pi-sifrene',
+    description: 'Lær sifrene i pi (3.14159…) i rekkefølge.',
+    rules: 'Trykk på riktig neste siffer. Feil gir game over.',
+    sequence: () => PI_DIGITS.split('').map(Number),
+    separator: '',
+  },
+  prime: {
+    title: 'Prime – Primtall',
+    description: 'Tast inn primtall i stigende rekkefølge.',
+    rules: 'Start på 2. Feil tast gir game over.',
+    sequence: () => {
+      const primes = [];
+      for (let n = 2; primes.length < 200; n++) {
+        let ok = true;
+        for (let i = 2; i <= Math.sqrt(n); i++) if (n % i === 0) { ok = false; break; }
+        if (ok) primes.push(n);
+      }
+      return primes;
+    },
+    separator: ' - ',
+  },
+  fibonacci: {
+    title: 'Fibonacci',
+    description: 'Tast inn Fibonacci-tall i stigende rekkefølge.',
+    rules: 'Start på 1. Feil tast gir game over.',
+    sequence: () => {
+      const fibs = [1, 1];
+      while (fibs.length < 80) fibs.push(fibs[fibs.length - 1] + fibs[fibs.length - 2]);
+      return fibs;
+    },
+    separator: ' - ',
+  },
+  pyramid: {
+    title: 'Pyramid – Kvadrattall',
+    description: 'Tast inn kvadrattall: 1, 4, 9, 16, 25 …',
+    rules: 'Feil tast gir game over.',
+    sequence: () => Array.from({ length: 100 }, (_, i) => (i + 1) ** 2),
+    separator: ' - ',
+  },
+};
+
+// ─── Tilstand ─────────────────────────────────────────────────────────────────
+
+let mode = 'pi';
+let seq = [];
+let seqPos = 0;
+let inputBuf = '';
+let score = 1;
+let highscores = {};
+let timerOn = false;
+let timerInterval = null;
+let timeLeft = 3.0;
+const TIME_LIMIT = 3.0;
+let gameOver = false;
+
+// ─── DOM-referanser ───────────────────────────────────────────────────────────
+
 const elScore      = document.getElementById('score');
 const elHighscore  = document.getElementById('highscore');
 const elTimer      = document.getElementById('timer');
@@ -69,7 +130,7 @@ function renderSequence() {
 
   elLines[0].innerHTML =
     '<span style="color:#9ea3ba">' + display.slice(0, inputStart) + '</span>' +
-    '<span style="color:#6a7cff;font-weight:bold">' + display.slice(inputStart) + '</span>';  
+    '<span style="color:#6a7cff;font-weight:bold">' + display.slice(inputStart) + '</span>';
 
   elLines[1].textContent = '';
   elLines[2].textContent = '';
@@ -85,14 +146,12 @@ function buildKeypad() {
     btn.className = 'key' + (label === '↵' ? ' enter-key' : '');
     btn.textContent = label;
     btn.setAttribute('type', 'button');
-    btn.addEventListener('click', () => {
-      handleKey(label);
-    });
+    btn.addEventListener('click', () => { handleKey(label); });
     elKeypad.appendChild(btn);
   });
 }
 
-// ─── Inntasting ───────────────────────────────────────────────────────────────
+// ─── Inntasting ────��───────────────────────────��──────────────────────────────
 
 function handleKey(label) {
   if (gameOver) return;
@@ -102,26 +161,12 @@ function handleKey(label) {
     renderSequence();
     return;
   }
-  if (label === '↵') {
-    submitAnswer();
-    return;
-  }
-  const digit = label;
+  if (label === '↵') { submitAnswer(); return; }
   const target = seq[seqPos];
-
-  inputBuf += digit;
+  inputBuf += label;
   elInput.value = inputBuf;
-
-  if (!target.startsWith(inputBuf)) {
-    triggerWrong();
-    return;
-  }
-
-  if (inputBuf === target) {
-    submitAnswer();
-    return;
-  }
-
+  if (!target.startsWith(inputBuf)) { triggerWrong(); return; }
+  if (inputBuf === target) { submitAnswer(); return; }
   resetTimer();
   renderSequence();
 }
@@ -169,25 +214,16 @@ function startTimer() {
       stopTimer();
       inputBuf = seq[seqPos];
       triggerWrong();
-      elStatus.textContent = '⏱ Tiden gikk ut! Riktig var: ' + seq[seqPos - (gameOver ? 0 : 1)];
+      elStatus.textContent = '⏱ Tiden gikk ut! Riktig var: ' + seq[seqPos];
     }
   }, 100);
 }
 
-function stopTimer() {
-  clearInterval(timerInterval);
-  timerInterval = null;
-}
+function stopTimer() { clearInterval(timerInterval); timerInterval = null; }
 
-function resetTimer() {
-  if (!timerOn) return;
-  stopTimer();
-  startTimer();
-}
+function resetTimer() { if (!timerOn) return; stopTimer(); startTimer(); }
 
-function updateTimerDisplay() {
-  elTimer.textContent = timeLeft.toFixed(1) + 's';
-}
+function updateTimerDisplay() { elTimer.textContent = timeLeft.toFixed(1) + 's'; }
 
 // ─── Regler-panel ─────────────────────────────────────────────────────────────
 
