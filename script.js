@@ -5,7 +5,7 @@ const PI_DIGITS = '1415926535897932384626433832795028841971693993751058209749445
 const MODES = {
   pi: {
     title: 'π – Pi-sifrene',
-    description: 'Lær sifrene i pi (3.14159…) i rekkefølge.',
+    description: 'Hvor mange siffer av pi klarer du? Og tørr du på tid?',
     rules: 'Trykk på riktig neste siffer. Feil gir game over.',
     sequence: () => PI_DIGITS.split('').map(Number),
     separator: '',
@@ -13,7 +13,7 @@ const MODES = {
   },
   prime: {
     title: 'Prime – Primtall',
-    description: 'Tast inn primtall i stigende rekkefølge.',
+    description: 'Orimtall i rekkefølge.',
     rules: 'Start på 2. Feil tast gir game over.',
     sequence: () => {
       const primes = [];
@@ -28,7 +28,7 @@ const MODES = {
   },
   fibonacci: {
     title: 'Fibonacci',
-    description: 'Tast inn Fibonacci-tall i stigende rekkefølge.',
+    description: 'Fibonacci-tall!',
     rules: 'Start på 1. Feil tast gir game over.',
     sequence: () => {
       const fibs = [1, 1];
@@ -39,7 +39,7 @@ const MODES = {
   },
   pyramid: {
     title: 'Pyramid – Trekanttall',
-    description: 'Tast inn trekanttall: 1, 3, 6, 10, 15 …',
+    description: 'Kan du trekanttallene?',
     rules: 'Feil tast gir game over.',
     sequence: () => Array.from({ length: 200 }, (_, i) => (i + 1) * (i + 2) / 2),
     separator: ' - ',
